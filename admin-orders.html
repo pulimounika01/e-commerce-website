@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Orders</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<h1>Admin Orders Dashboard</h1>
+
+<a href="index.html">Back to Store</a>
+<br><br>
+
+<div id="orders"></div>
+
+<script>
+async function loadOrders() {
+    const token = localStorage.getItem("token");
+
+    const res = await fetch("http://localhost:5000/api/admin/orders/all-orders", {
+        headers: {
+            "Authorization": "Bearer " + token
+        }
+    });
+
+    const orders = await res.json();
+
+    const container = document.getElementById("orders");
+    container.innerHTML = "";
+
+    if (!Array.isArray(orders)) {
+        container.innerHTML = "<h3>Please login first</h3>";
+        return;
+    }
+
+    orders.forEach(order => {
+        container.innerHTML += `
+            <div class="card">
+                <h3>Order ID: ${order._id}</h3>
+                <p><b>Name:</b> ${order.customerName}</p>
+                <p><b>Email:</b> ${order.customerEmail}</p>
+                <p><b>Total:</b> ₹${order.totalAmount}</p>
+                <p><b>Status:</b> ${order.status}</p>
+
+                <button onclick="updateStatus('${order._id}', 'Shipped')">Shipped</button>
+                <button onclick="updateStatus('${order._id}', 'Delivered')">Delivered</button>
+                <button onclick="updateStatus('${order._id}', 'Cancelled')">Cancelled</button>
+            </div>
+        `;
+    });
+}
+
+async function updateStatus(id, status) {
+    const token = localStorage.getItem("token");
+
+    await fetch(`http://localhost:5000/api/admin/orders/update-status/${id}`, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + token
+        },
+        body: JSON.stringify({ status })
+    });
+
+    alert("Status Updated!");
+    loadOrders();
+}
+
+loadOrders();
+</script>
+
+</body>
+</html>

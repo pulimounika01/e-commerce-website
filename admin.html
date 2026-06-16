@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Panel</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<h1>🧑‍💼 Admin Panel</h1>
+
+<!-- ADD PRODUCT FORM -->
+<h2>Add Product</h2>
+
+<input type="text" id="name" placeholder="Product Name"><br><br>
+<input type="number" id="price" placeholder="Price"><br><br>
+<input type="text" id="description" placeholder="Description"><br><br>
+<input type="text" id="image" placeholder="Image URL"><br><br>
+<input type="text" id="category" placeholder="Category"><br><br>
+<input type="number" id="stock" placeholder="Stock"><br><br>
+
+<button onclick="addProduct()">Add Product</button>
+
+<hr>
+
+<!-- PRODUCT LIST -->
+<h2>All Products</h2>
+<div id="productList"></div>
+
+<script>
+
+// 🔐 Load Products
+async function loadProducts() {
+
+    const res =
+        await fetch("http://localhost:5000/api/admin/products");
+
+    const products =
+        await res.json();
+
+    let container =
+        document.getElementById("productList");
+
+    container.innerHTML = "";
+
+    products.forEach(p => {
+
+        container.innerHTML += `
+            <div class="card">
+                <h3>${p.name}</h3>
+                <p>₹${p.price}</p>
+                <p>${p.description}</p>
+
+                <button onclick="deleteProduct('${p._id}')">
+                    Delete
+                </button>
+            </div>
+        `;
+    });
+}
+
+// ➕ Add Product
+async function addProduct() {
+
+    const product = {
+        name: document.getElementById("name").value,
+        price: document.getElementById("price").value,
+        description: document.getElementById("description").value,
+        image: document.getElementById("image").value,
+        category: document.getElementById("category").value,
+        stock: document.getElementById("stock").value
+    };
+
+    await fetch("http://localhost:5000/api/admin/add-product", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(product)
+    });
+
+    alert("Product Added");
+
+    loadProducts();
+}
+
+// ❌ Delete Product
+async function deleteProduct(id) {
+
+    await fetch(`http://localhost:5000/api/admin/product/${id}`, {
+        method: "DELETE"
+    });
+
+    alert("Product Deleted");
+
+    loadProducts();
+}
+
+loadProducts();
+
+</script>
+
+</body>
+</html>

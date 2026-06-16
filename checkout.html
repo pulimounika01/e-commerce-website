@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Checkout</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<h1>Checkout</h1>
+
+<a href="cart.html">Back to Cart</a>
+<br><br>
+
+<input type="text" id="name" placeholder="Enter Name">
+<br><br>
+
+<input type="email" id="email" placeholder="Enter Email">
+<br><br>
+
+<h3 id="totalAmount">Total: ₹0</h3>
+
+<button onclick="placeOrder()">Place Order</button>
+
+<script>
+let cartItems = [];
+let total = 0;
+
+async function loadCart() {
+    const response = await fetch("http://localhost:5000/api/cart");
+    const allItems = await response.json();
+
+    cartItems = allItems.filter(item => item.productId !== null);
+
+    total = 0;
+
+    cartItems.forEach(item => {
+        total += item.productId.price * item.quantity;
+    });
+
+    document.getElementById("totalAmount").innerText = "Total: ₹" + total;
+}
+
+async function placeOrder() {
+    const name = document.getElementById("name").value;
+    const email = document.getElementById("email").value;
+
+    const items = cartItems.map(item => ({
+        productId: item.productId._id,
+        quantity: item.quantity
+    }));
+
+    const response = await fetch("http://localhost:5000/api/orders", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            customerName: name,
+            customerEmail: email,
+            items: items,
+            totalAmount: total
+        })
+    });
+
+    if (response.ok) {
+        alert("Order placed successfully!");
+        window.location.href = "success.html";
+    } else {
+        alert("Order failed");
+    }
+}
+
+loadCart();
+</script>
+
+</body>
+</html>
